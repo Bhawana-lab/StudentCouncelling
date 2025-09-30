@@ -52,30 +52,37 @@ const StudentDashboard = ({ user, userData, setUserData }) => {
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setError('');
-        try {
-            const twelfth = formData.twelfthMarks;
-            const totalTwelfthMarks = Object.values(twelfth).reduce((sum, mark) => sum + Number(mark || 0), 0);
-            
-            const fullData = {
-                ...formData,
-                totalTwelfthMarks,
-                applicationStatus: 'submitted',
-                email: user.email,
-                role: 'student'
-            };
+    e.preventDefault();
+    setLoading(true);
+    setError('');
 
-            await setDoc(doc(db, "users", user.uid), fullData, { merge: true });
-            setUserData(prev => ({...prev, ...fullData}));
-        } catch (err) {
-            setError('Failed to submit application. Please try again.');
-            console.error(err);
-        }
+    if (formData.branchChoices.choice1 && formData.branchChoices.choice2 && 
+        formData.branchChoices.choice1 === formData.branchChoices.choice2) {
+        setError("You cannot select the same branch for both choices. Please make Chnages in your Branch.");
         setLoading(false);
-    };
-    
+        return;
+    }
+
+    try {
+        const twelfth = formData.twelfthMarks;
+        const totalTwelfthMarks = Object.values(twelfth).reduce((sum, mark) => sum + Number(mark || 0), 0);
+        
+        const fullData = {
+            ...formData,
+            totalTwelfthMarks,
+            applicationStatus: 'submitted',
+            email: user.email,
+            role: 'student'
+        };
+
+        await setDoc(doc(db, "users", user.uid), fullData, { merge: true });
+        setUserData(prev => ({...prev, ...fullData}));
+    } catch (err) {
+        setError('Failed to submit application. Please try again.');
+        console.error(err);
+    }
+    setLoading(false);
+};
     const handleAcceptOffer = async () => {
         setLoading(true);
         try {
